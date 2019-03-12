@@ -5,6 +5,7 @@
   tasks:
     - name: Install Apache.
       yum: name={{ item }} state=present
+      with_items:
       - httpd
       - php
       - php-mysql
