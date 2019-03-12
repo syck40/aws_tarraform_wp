@@ -337,9 +337,10 @@ resource "aws_s3_bucket" "code" {
 resource "aws_db_instance" "wp_db" {
   allocated_storage      = 10
   engine                 = "mysql"
-  engine_version         = "5.6.27"
+  engine_version         = "5.6"
   instance_class         = "${var.db_instance_class}"
   name                   = "${var.dbuser}"
+  username               = "${var.dbuser}"
   password               = "${var.dbpassword}"
   db_subnet_group_name   = "${aws_db_subnet_group.wp_rds_subnetgroup.name}"
   vpc_security_group_ids = ["${aws_security_group.wp_rds_sg.id}"]
@@ -397,7 +398,7 @@ resource "aws_instance" "wp_dev" {
 
   key_name               = "${aws_key_pair.wp_auth.id}"
   vpc_security_group_ids = ["${aws_security_group.wp_dev_sg.id}"]
-  iam_instance_profile   = "${aws_subnet.wp_public1_subnet.id}"
+  iam_instance_profile   = "${aws_iam_instance_profile.s3_access_profile.id}"
   subnet_id              = "${aws_subnet.wp_public1_subnet.id}"
 
   provisioner "local-exec" {
@@ -413,7 +414,7 @@ EOD
   }
 
   provisioner "local-exec" {
-    command = "aws ec2 wait instance-status-ok --instance-ids ${aws_instance.wp_dev.id} --profile terraform-test && ansible-playbook -i aws_hosts wordpress.yml"
+    command = "/root/.local/bin/aws ec2 wait instance-status-ok --instance-ids ${aws_instance.wp_dev.id} --profile terraform-admin && ansible-playbook -i aws_hosts wordpress.yml"
   }
 }
 
